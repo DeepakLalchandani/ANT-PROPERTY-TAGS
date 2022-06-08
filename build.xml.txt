@@ -1,0 +1,77 @@
+<project name="MyProject" default="make_war" basedir=".">
+    <description>
+        Build file for MyProject Application
+    </description>
+
+    <!-- get global properties for this build from build.properties file ,unable to locate this file,Please make this file for me ?-->
+    <property file="project_build.properties"/>
+    <!-- directories for build -->
+    <property name="build_dir_war" value="${build_dir}/MyProject_WAR"/>
+    
+    <!-- classpath for compiling web classes -->
+    <path id="web.classpath">
+        <pathelement location="${java_home}/lib/tools.jar"/>
+    </path>
+
+    <!-- Initial Targets(not in use currently) -->
+    <target name="init">
+        <tstamp/>
+    </target>
+    <!-- Creates the directories required for the build -->
+    <target name="initdir" depends="buildclean"
+  		description="creates the destination directroy for build file" >
+           <mkdir dir="${build_dir_war}"/>
+    </target>
+
+       <!-- compile the web source classes-->
+    <target name="compile_web_classes" depends="compile_clean_jsp"
+            description="compile the web source classes">
+        <mkdir dir="${build_dir_war}/WEB-INF"/>
+        <mkdir dir="${build_dir_war}/WEB-INF/classes"/>
+        <javac  classpathref="web.classpath" executable="${javacompiler}"
+    		 fork="yes" srcdir="${src_web_java}" 
+    		 destdir="${build_dir_war}/WEB-INF/classes/">
+            <classpath>
+                <fileset dir="${external_jar_classpath}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+            <include name="com/**/*.java"/>
+        </javac>
+    </target>
+
+
+    <!-- creates the war files for web classes and jsp -->
+    <target name="make_war" depends="compile_web_classes"
+        description="creates the war files for the web classes and jsp" >
+        <!-- copy the  files for  war-->
+        <copy todir="${build_dir_war}/" preservelastmodified="true">
+            <fileset dir="${src_web_jsp}">
+                <exclude name="CVS"/>
+                <exclude name="CVS/**/*.*"/>
+                <exclude name="WEB-INF/**/*.class"/>
+            </fileset>
+        </copy>
+        <copy toDir="${build_dir_war}${web_apps_property_destination}">
+            <fileset dir="${web_apps_property_source}" includes="*.properties"/>
+        </copy>
+        <!-- make the war-->
+        <jar destfile="${build_dir_war}/tess_new.war">
+            <fileset dir="${build_dir_war}" includes="**/*.*"/>
+        </jar>
+    </target>
+
+    <!-- Delete the ${build_dir_war} used by jsp compilation -->
+    <target name="compile_clean_jsp"
+        description="compile clean for jsp build" >
+        <delete dir="${build_dir_war}/"/>
+        <mkdir dir="${build_dir_war}"/>
+    </target>
+ 
+
+    <!-- Delete the ${build_dir} directory  -->
+    <target name="buildclean"
+	        description="compileclean up" >
+        <delete  dir="${build_dir}/"/>
+    </target>
+</project>
